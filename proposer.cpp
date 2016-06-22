@@ -27,10 +27,7 @@ void Proposer::propose(int val)
         exchanged = this->currentProposalNumber.compare_exchange_weak(n, n + this->proposalNumbersIncrement);
     } while (!exchanged);
 
-    //std::random_device r(val);
- 
-    // Choose a random mean between 1 and 6
-    std::default_random_engine e1(val);
+    std::default_random_engine randomEngine(val);
     std::uniform_int_distribution<int> uniform_dist(1, 1000);
 
     // TODO: persist n.
@@ -42,7 +39,7 @@ void Proposer::propose(int val)
 
     // TODO: parallelize.
     for (int i = 0; i < majority; i++) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(uniform_dist(e1)));
+        std::this_thread::sleep_for(std::chrono::milliseconds(uniform_dist(randomEngine)));
         PrepareResponse response = this->acceptors[i]->prepare(n);
         if (!response.prepareAck) {
             std::cout << "Prepare failed!\n";
@@ -62,7 +59,7 @@ void Proposer::propose(int val)
 
     // TODO: parallelize;
     for (int i = 0; i < majority; i++) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(uniform_dist(e1)));
+        std::this_thread::sleep_for(std::chrono::milliseconds(uniform_dist(randomEngine)));
         this->acceptors[i]->accept(n, actualVal);
     }
 }
